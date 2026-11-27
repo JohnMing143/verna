@@ -4,7 +4,8 @@
   python vote/build_pool.py probes <批次名> <系统> [--n 20]      保真题：同一份改写，另一份悄悄改了一个数字或限定词
 
 输出 vote/data/pool_<批次名>.jsonl，格式就是 admin.py import-items 要的格式。
-过滤规则按 vote/DESIGN.md 第 3 节：两份改写字级相似度 < 0.9、差别不只在标点；两份都过 srh/facts.py
+过滤规则按 vote/DESIGN.md 第 3 节：两份改写字级相似度 < 0.9、差别不只在标点；哪一份和原文几乎一样（只差标点格式，或相似度 ≥ 0.97）
+也不出题，因为三选一里它和“原文更好”分不开；两份都过 srh/facts.py
 （对照的是去掉助手附言后的原文，删掉“约 330 字，如需调整……”不算丢信息）。没过的数量会打印出来，事实规则没过的
 比例本身就是保真指标，要和投票结果一起报告。
 --pred 用来接训练出来的模型：runs/<RUN>/<时间>/pred_native.jsonl 和 pred_test.jsonl，名字自己起（比如 qwen-s2）。
@@ -66,6 +67,11 @@ def load_outputs(preds):
     return outs
 
 
+def same_as_source(src, out):
+    """只差标点、空白、加粗，或者字级相似度 ≥ 0.97。"""
+    return PUNCT.sub("", src) == PUNCT.sub("", out) or sim(src, out) >= 0.97
+
+
 def fact_ok(src, out):
     return facts.compare(prompts.strip_assistant_meta(src), out)["ok"]
 
@@ -99,6 +105,11 @@ def cmd_pair(a):
         for n in bad:
             drop[f"事实规则没过：{n}"] += 1
         if bad:
+            continue
+        same = [n for n, t in ((a.sys_a, x), (a.sys_b, y)) if same_as_source(s["text"], t)]
+        for n in same:
+            drop[f"改写和原文几乎一样：{n}"] += 1
+        if same:      # 三选一里，这一份和“原文更好”就分不开了；这个比例单独报告
             continue
         if x == y or PUNCT.sub("", x) == PUNCT.sub("", y):
             drop["只差标点"] += 1

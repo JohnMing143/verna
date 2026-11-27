@@ -18,12 +18,14 @@ CAP_SHARE, MIN_VOTES, DECISIVE = 0.10, 5, 0.70
 def load(db, batch):
     c = sqlite3.connect(db)
     c.row_factory = sqlite3.Row
-    items = {r["id"]: dict(r) for r in c.execute("select id, a_system, b_system, kind, probe_answer, meta, status from items")}
+    items = {r["id"]: dict(r) for r in c.execute("select id, a_system, b_system, kind, probe_answer, meta, status from items")
+             if not json.loads(r["meta"] or "{}").get("dropped")}       # 出题出错撤下的（比如改写和原文一样），票不算
     votes = [dict(r) for r in c.execute("select item_id, judge_id, choice, ms, reasons, note from votes")]
     skips = collections.Counter(r[0] for r in c.execute("select item_id from skips"))
     if batch:
         keep = {i for i, it in items.items() if (json.loads(it["meta"] or "{}").get("batch") or "").startswith(batch) or it["kind"] == "probe"}
         votes = [v for v in votes if v["item_id"] in keep]
+    votes = [v for v in votes if v["item_id"] in items]
     return items, votes, skips
 
 
