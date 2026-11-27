@@ -635,7 +635,7 @@
       setDockDone(false);
       if (exhausted) {
         $("#review-end").hidden = false;
-        $("#end-summary").textContent = "感谢你的评审。你一共评了 " + votes.length + " 题。";
+        $("#end-summary").textContent = "谢谢你参与评审。你一共评了 " + votes.length + " 题。";
       } else {
         $("#review-end").hidden = true;
         ensureMore();

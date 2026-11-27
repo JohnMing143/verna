@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#f9f8f5" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0b0b0d" media="(prefers-color-scheme: dark)">
-<title>Verna · 把 AI 腔译成好中文</title>
-<meta name="description" content="大模型写下的中文越来越多，读起来顺畅的却很少。Verna 是一个开源的改写模型，它要学的标准来自真人的判断。">
+<title>Verna · 把 AI 腔改写成好中文</title>
+<meta name="description" content="大模型写的中文越来越多，读起来顺畅的却很少。Verna 是开源改写模型，要学的标准来自真人的判断。">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -34,8 +34,8 @@
     <div class="hero-glow" aria-hidden="true"></div>
     <div class="container hero-inner">
       <div class="hero-rule" aria-hidden="true"></div>
-      <h1 class="hero-title">把 AI 腔译成好中文</h1>
-      <p class="hero-lead">大模型写下的中文越来越多，读起来顺畅的却很少。Verna 是一个开源的改写模型，它要学的标准来自真人的判断。</p>
+      <h1 class="hero-title">把 AI 腔改写成好中文</h1>
+      <p class="hero-lead">大模型写的中文越来越多，读起来顺畅的却很少。Verna 是开源改写模型，要学的标准来自真人的判断。</p>
       <div class="hero-actions">
         <a class="btn btn-primary" href="#/review">
           <span>开始评审</span>
@@ -55,14 +55,14 @@
           <h2 class="sec-title">问题</h2>
         </div>
         <div class="sec-content">
-          <p class="sec-lead">大模型在训练中被自动打分程序反复评分，写出来的中文也随之带上了打分程序的偏好。最常见的是两种。</p>
+          <p class="sec-lead">训练时，自动打分程序反复给大模型评分，模型写出来的中文也就带上了打分程序的偏好。最常见的有两种。</p>
           <div class="problem-list">
             <article class="problem-card reveal">
               <div class="problem-head">
                 <span class="mono-index" aria-hidden="true">01</span>
                 <h3 class="problem-heading">多余的对比</h3>
               </div>
-              <p class="problem-body">人说“不是 A，而是 B”，是因为听的人可能真的以为 A。模型却在没人这样想的地方照样这么写，前半句没有提供任何信息。</p>
+              <p class="problem-body">人说“不是 A，而是 B”，是因为听的人可能真的以为 A。没人这样想的时候，模型也照样这么写，前半句没有任何信息。</p>
               <div class="specimen specimen-redact" id="specimen-redact" tabindex="0" role="button">
                 <span class="corner c-tl" aria-hidden="true"></span>
                 <span class="corner c-tr" aria-hidden="true"></span>
@@ -73,7 +73,7 @@
               <div class="problem-foot">
                 <div class="stat-block">
                   <div class="stat-value">2.5–9.2 倍</div>
-                  <p class="stat-desc">五个商用模型使用这一句式的密度与人类写作之比</p>
+                  <p class="stat-desc">五个商用模型用这个句式的密度，和人类写作的比值</p>
                 </div>
                 <a class="cite-link" href="https://arxiv.org/abs/2610.22249" target="_blank" rel="noopener noreferrer">
                   <span>arXiv 2610.22249</span>
@@ -85,9 +85,9 @@
             <article class="problem-card reveal">
               <div class="problem-head">
                 <span class="mono-index" aria-hidden="true">02</span>
-                <h3 class="problem-heading">过度的压缩</h3>
+                <h3 class="problem-heading">过度压缩</h3>
               </div>
-              <p class="problem-body">为了缩短输出，模型把“已经核查”写成“已核”，把“奖励”写成“奖”。现代汉语的双音词替读者保留了必要的冗余，省掉它们，理解的负担就转给了读者。</p>
+              <p class="problem-body">为了缩短输出，模型把“已经核查”写成“已核”，把“奖励”写成“奖”。现代汉语的双音词保留了必要的冗余，省掉以后，理解的负担就落到了读者身上。</p>
               <div class="specimen specimen-expand" id="specimen-expand" tabindex="0" role="button">
                 <span class="corner c-tl" aria-hidden="true"></span>
                 <span class="corner c-tr" aria-hidden="true"></span>
@@ -98,7 +98,7 @@
               </div>
               <div class="problem-foot">
                 <div class="stat-block">
-                  <p class="stat-desc">实验显示，训练中的长度惩罚会让模型一律选择更短的句式</p>
+                  <p class="stat-desc">实验显示，训练中的长度惩罚会让模型一律选更短的句式</p>
                 </div>
                 <a class="cite-link" href="https://arxiv.org/abs/2610.29162" target="_blank" rel="noopener noreferrer">
                   <span>arXiv 2610.29162</span>
@@ -119,8 +119,8 @@
           <h2 class="sec-title">愿景</h2>
         </div>
         <div class="sec-content vision-copy">
-          <p>一个开源、能在个人电脑上运行的改写模型：给它一段 AI 腔的中文，它还你一段准确、自然、得体的文字。信息一条不丢，一条不添，文体和语气保持原样。</p>
-          <p>什么是好中文，不由某一个人说了算。评判标准来自许多评委的选择，规则随评审结果持续修订，模型也随之一轮一轮地改进。</p>
+          <p>做一个开源改写模型，在个人电脑上就能运行。给它一段 AI 腔的中文，改出来意思准确，读起来自然得体。信息一条不丢，也不多添，文体和语气保持原样。</p>
+          <p>什么是好中文，不由哪一个人说了算。评判标准来自许多评委的选择，规则按评审结果不断修订，模型也跟着一轮轮改进。</p>
         </div>
       </div>
     </div>
@@ -133,7 +133,7 @@
           <h2 class="sec-title">你可以做什么</h2>
         </div>
         <div class="sec-content">
-          <p class="sec-lead">每道题包含一段 AI 写的原文和两份改写。读完后，选出你更愿意读的那一份。</p>
+          <p class="sec-lead">每道题有一段 AI 写的原文和两份改写。读完后，选出你更愿意读的那一份。</p>
           <ol class="steps-grid">
             <li class="step-item">
               <span class="mono-index" aria-hidden="true">01</span>
@@ -145,10 +145,10 @@
             </li>
             <li class="step-item">
               <span class="mono-index" aria-hidden="true">03</span>
-              <span class="step-text">选择，理由可写可不写</span>
+              <span class="step-text">选出一份，理由可写可不写</span>
             </li>
           </ol>
-          <p class="sec-note">每道题由多位评委分别作答，结果不取决于任何一个人。无需注册。</p>
+          <p class="sec-note">每道题都有多位评委分别作答，结果不取决于任何一个人。不用注册。</p>
           <div class="sec-actions">
             <a class="btn btn-ghost" href="#/submit">投稿原文</a>
           </div>
@@ -164,7 +164,7 @@
           <h2 class="sec-title">开源</h2>
         </div>
         <div class="sec-content">
-          <p class="sec-body">Verna 的代码将在 GitHub 开源。评审数据目前仅与参与开发的贡献者共享。</p>
+          <p class="sec-body">Verna 的代码已经在 <a href="https://github.com/JohnMing143/verna" target="_blank" rel="noopener">GitHub</a> 上开源，许可证是 Apache-2.0。评审数据目前只和参与开发的贡献者共享。</p>
         </div>
       </div>
     </div>
@@ -215,7 +215,7 @@
       <div class="prompt-bar">
         <div class="prompt-copy">
           <p class="prompt-q">你更愿意读哪一份？</p>
-          <p class="prompt-sub">两份改写都应与原文信息一致、文体和语气不变。</p>
+          <p class="prompt-sub">两份改写都应该和原文信息一致，文体和语气不变。</p>
         </div>
         <label class="diff-toggle">
           <input type="checkbox" id="opt-diff">
@@ -256,7 +256,7 @@
           <path d="M8 12.4L10.8 15.2L16.2 9.4" stroke="var(--accent)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
       </div>
-      <h2>这一批题已经完成</h2>
+      <h2>这一批题评完了</h2>
       <p id="end-summary"></p>
       <div class="state-actions">
         <button type="button" class="btn btn-primary" id="btn-copy">复制链接</button>
@@ -275,7 +275,7 @@
     <div class="submit-head">
       <div class="hero-rule" aria-hidden="true"></div>
       <h1 class="submit-title">投稿原文</h1>
-      <p class="submit-lead">见过读起来别扭的 AI 中文，可以投给我们。经过筛选后，它会成为评审题目的原文。</p>
+      <p class="submit-lead">遇到读起来别扭的 AI 中文，可以投给我们。筛选后，会用作评审题的原文。</p>
     </div>
 
     <form id="submit-form" class="submit-form" novalidate>
@@ -306,7 +306,7 @@
 
       <div class="field">
         <label class="field-label" for="sub-scene">当时的用途（选填）</label>
-        <input class="sub-input" type="text" id="sub-scene" maxlength="100" placeholder="例如：写周报、润色论文摘要、写产品文案">
+        <input class="sub-input" type="text" id="sub-scene" maxlength="100" placeholder="比如：写周报、润色论文摘要、写产品文案">
       </div>
 
       <div class="field">
@@ -316,7 +316,7 @@
 
       <label class="sub-consent">
         <input type="checkbox" id="sub-consent">
-        <span>这段文字由 AI 生成，不含个人隐私信息。我同意 Verna 将它用于评审和训练。</span>
+        <span>这段文字是 AI 生成的，不含个人隐私信息。我同意 Verna 把它用于评审和训练。</span>
       </label>
 
       <div class="submit-actions">
@@ -332,7 +332,7 @@
           <path d="M8 12.4L10.8 15.2L16.2 9.4" stroke="var(--accent)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
       </div>
-      <h2>已收到，谢谢。</h2>
+      <h2>收到了，谢谢。</h2>
       <p>投稿会先经过筛选，再进入题库。</p>
       <div class="state-actions">
         <button type="button" class="btn btn-ghost" id="sub-again">再投一篇</button>
