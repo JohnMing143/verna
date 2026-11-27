@@ -1159,21 +1159,16 @@ mark.ins {
 
 .vote-choices {
   display: grid;
-  grid-template-columns: 1fr auto auto 1fr;
+  grid-template-columns: 1fr auto 1fr;
   gap: 10px;
   align-items: stretch;
 }
 
 @media (max-width: 560px) {
   .vote-choices {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr 1fr 1fr;
     gap: 8px;
   }
-
-  .vote-choices [data-v="L"] { order: 1; }
-  .vote-choices [data-v="R"] { order: 2; }
-  .vote-choices [data-v="tie"] { order: 3; }
-  .vote-choices [data-v="bad"] { order: 4; }
 }
 
 .vote-btn {
@@ -1475,4 +1470,225 @@ kbd {
     opacity: 1;
     color: var(--ink);
   }
+}
+
+/* ==========================================================================
+   Header Secondary Link
+   ========================================================================== */
+.header-nav-link {
+  font-size: 13px;
+  color: var(--ink-2);
+  padding: 4px 2px;
+  border-bottom: 1px solid transparent;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+.header-nav-link:hover {
+  color: var(--ink);
+  border-bottom-color: var(--line-strong);
+}
+
+.sec-actions {
+  margin-top: 28px;
+}
+
+.state-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ==========================================================================
+   Submission Page
+   ========================================================================== */
+.view-submit {
+  padding: 48px 0 96px;
+}
+
+.submit-wrap {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+@media (max-width: 640px) {
+  .view-submit {
+    padding: 28px 0 72px;
+  }
+
+  .submit-wrap {
+    padding: 0 16px;
+  }
+}
+
+.submit-head {
+  margin-bottom: 30px;
+}
+
+.submit-head .hero-rule {
+  margin-bottom: 20px;
+}
+
+.submit-title {
+  margin: 0 0 14px;
+  font-family: var(--font-serif);
+  font-size: clamp(1.75rem, 4vw, 2.4rem);
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+
+.submit-lead {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.85;
+  color: var(--ink-2);
+  max-width: 36em;
+}
+
+.submit-form {
+  background-color: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  padding: 28px 30px 30px;
+  box-shadow: var(--shadow-card);
+}
+
+@media (max-width: 640px) {
+  .submit-form {
+    padding: 20px 18px 22px;
+    border-radius: var(--radius-md);
+  }
+}
+
+.field {
+  margin-bottom: 24px;
+}
+
+.field-label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.sub-textarea,
+.sub-input,
+.sub-select {
+  width: 100%;
+  border: 1px solid var(--line-strong);
+  background-color: var(--surface-recessed);
+  border-radius: var(--radius-sm);
+  color: var(--ink);
+  font-size: 15px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.sub-textarea {
+  display: block;
+  min-height: 220px;
+  resize: vertical;
+  padding: 14px 16px;
+  font-family: var(--font-serif);
+  font-size: 16px;
+  line-height: 1.85;
+  letter-spacing: 0.01em;
+}
+
+.sub-input,
+.sub-select {
+  height: 44px;
+  padding: 0 12px;
+}
+
+.sub-select {
+  color-scheme: light dark;
+  padding-right: 34px;
+}
+
+.sub-textarea::placeholder,
+.sub-input::placeholder {
+  color: var(--ink-3);
+}
+
+.sub-textarea:focus,
+.sub-input:focus,
+.sub-select:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.field-meta {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.sub-count {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--ink-3);
+  font-variant-numeric: tabular-nums;
+}
+
+.sub-limit {
+  font-size: 12px;
+  color: var(--accent);
+}
+
+.sub-consent {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 4px 0 26px;
+  font-size: 14px;
+  line-height: 1.65;
+  color: var(--ink-2);
+  cursor: pointer;
+  user-select: none;
+}
+
+.sub-consent input {
+  flex-shrink: 0;
+  margin: 3px 0 0;
+  accent-color: var(--accent);
+}
+
+.submit-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px;
+}
+
+.submit-actions .btn {
+  height: 42px;
+  padding: 0 22px;
+}
+
+.form-error {
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--accent);
+}
+
+.form-error:empty {
+  display: none;
+}
+
+.view-submit .state-card {
+  margin-top: 8px;
 }

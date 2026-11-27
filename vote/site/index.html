@@ -21,6 +21,7 @@
       <span class="brand-name">Verna</span>
     </a>
     <div class="header-right">
+      <a class="header-nav-link" id="header-nav-submit" href="#/submit">投稿</a>
       <a class="header-cta" id="header-cta" href="#/review">开始评审</a>
       <span class="review-count" id="review-count" hidden></span>
     </div>
@@ -148,6 +149,9 @@
             </li>
           </ol>
           <p class="sec-note">每道题由多位评委分别作答，结果不取决于任何一个人。无需注册。</p>
+          <div class="sec-actions">
+            <a class="btn btn-ghost" href="#/submit">投稿原文</a>
+          </div>
         </div>
       </div>
     </div>
@@ -254,7 +258,10 @@
       </div>
       <h2>这一批题已经完成</h2>
       <p id="end-summary"></p>
-      <button type="button" class="btn btn-primary" id="btn-copy">复制链接</button>
+      <div class="state-actions">
+        <button type="button" class="btn btn-primary" id="btn-copy">复制链接</button>
+        <a class="btn btn-ghost" href="#/submit">投稿原文</a>
+      </div>
     </section>
 
     <section id="review-error" class="state-card" hidden>
@@ -263,12 +270,83 @@
   </div>
 </main>
 
+<main id="view-submit" class="view-submit" hidden>
+  <div class="submit-wrap">
+    <div class="submit-head">
+      <div class="hero-rule" aria-hidden="true"></div>
+      <h1 class="submit-title">投稿原文</h1>
+      <p class="submit-lead">见过读起来别扭的 AI 中文，可以投给我们。经过筛选后，它会成为评审题目的原文。</p>
+    </div>
+
+    <form id="submit-form" class="submit-form" novalidate>
+      <div class="field">
+        <label class="field-label" for="sub-text">原文（必填）</label>
+        <textarea class="sub-textarea" id="sub-text" placeholder="粘贴一段 AI 写的中文，至少 50 字"></textarea>
+        <div class="field-meta">
+          <span class="sub-count" id="sub-count">已输入 0 字</span>
+          <span class="sub-limit" id="sub-limit-hint" hidden>最多 3000 字</span>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="field-label" for="sub-model">来自哪个模型（选填）</label>
+        <select class="sub-select" id="sub-model">
+          <option value="不清楚">不清楚</option>
+          <option value="ChatGPT">ChatGPT</option>
+          <option value="Claude">Claude</option>
+          <option value="Gemini">Gemini</option>
+          <option value="DeepSeek">DeepSeek</option>
+          <option value="豆包">豆包</option>
+          <option value="Kimi">Kimi</option>
+          <option value="通义千问">通义千问</option>
+          <option value="文心一言">文心一言</option>
+          <option value="其他">其他</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label class="field-label" for="sub-scene">当时的用途（选填）</label>
+        <input class="sub-input" type="text" id="sub-scene" maxlength="100" placeholder="例如：写周报、润色论文摘要、写产品文案">
+      </div>
+
+      <div class="field">
+        <label class="field-label" for="sub-nickname">署名（选填）</label>
+        <input class="sub-input" type="text" id="sub-nickname" maxlength="30" placeholder="留空即匿名">
+      </div>
+
+      <label class="sub-consent">
+        <input type="checkbox" id="sub-consent">
+        <span>这段文字由 AI 生成，不含个人隐私信息。我同意 Verna 将它用于评审和训练。</span>
+      </label>
+
+      <div class="submit-actions">
+        <button type="submit" class="btn btn-primary" id="sub-go" disabled>提交</button>
+        <span class="form-error" id="sub-error" role="alert"></span>
+      </div>
+    </form>
+
+    <section id="submit-done" class="state-card" hidden>
+      <div class="state-icon" aria-hidden="true">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+          <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.4"/>
+          <path d="M8 12.4L10.8 15.2L16.2 9.4" stroke="var(--accent)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <h2>已收到，谢谢。</h2>
+      <p>投稿会先经过筛选，再进入题库。</p>
+      <div class="state-actions">
+        <button type="button" class="btn btn-ghost" id="sub-again">再投一篇</button>
+        <a class="btn btn-primary" href="#/review">去评审</a>
+      </div>
+    </section>
+  </div>
+</main>
+
 <div class="vote-dock" id="vote-dock" hidden>
   <div class="dock-inner">
     <div class="vote-choices" id="vote-choices">
       <button type="button" class="vote-btn vote-primary" data-v="L"><kbd>←</kbd><span>A 更好</span></button>
-      <button type="button" class="vote-btn vote-secondary" data-v="tie"><span>差不多</span><kbd>↓</kbd></button>
-      <button type="button" class="vote-btn vote-secondary" data-v="bad"><span>都不行</span><kbd>X</kbd></button>
+      <button type="button" class="vote-btn vote-secondary" data-v="src"><span>原文更好</span><kbd>↓</kbd></button>
       <button type="button" class="vote-btn vote-primary" data-v="R"><span>B 更好</span><kbd>→</kbd></button>
     </div>
 

@@ -1,0 +1,21 @@
+[Unit]
+Description=Verna vote API (127.0.0.1:8790)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/root/shuorenhua/vote/server
+StateDirectory=verna
+StateDirectoryMode=0700
+UMask=0077
+Environment=PYTHONUNBUFFERED=1
+# Optional: VERNA_IP_SALT=... lives here instead of in /var/lib/verna/ip_salt
+# EnvironmentFile=-/etc/verna-vote.env
+ExecStart=/usr/bin/python3 /root/shuorenhua/vote/server/server.py --db /var/lib/verna/verna.db --port 8790
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target

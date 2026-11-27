@@ -33,3 +33,4 @@ __pycache__/
 .DS_Store
 /vote/proto/
 /autopilot/floway_probe.py
+/vote/*-followup-*.md

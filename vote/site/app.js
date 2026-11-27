@@ -27,7 +27,7 @@
   };
 
   var judge = store.get("verna.judge", null);
-  if (!judge) {
+  if (!judge || !/^j[a-z0-9]{8,40}$/.test(String(judge))) {
     judge = "j" + Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
     store.set("verna.judge", judge);
   }
@@ -40,16 +40,222 @@
     prefs = { diff: false, quiet: false };
   }
 
+  var skips = store.get("verna.proto.skips", []);
+  if (!Array.isArray(skips)) {
+    skips = [];
+  }
+  var skippedMap = {};
+  for (var skipIndex = 0; skipIndex < skips.length; skipIndex++) {
+    if (typeof skips[skipIndex] === "string") {
+      skippedMap[skips[skipIndex]] = true;
+    }
+  }
+
+  var votedMap = {};
+  function syncVotedMap() {
+    votedMap = {};
+    for (var vi = 0; vi < votes.length; vi++) {
+      if (votes[vi] && votes[vi].item) {
+        votedMap[votes[vi].item] = true;
+      }
+    }
+  }
+  syncVotedMap();
+
   /* ------------------------------------------------------------------------
-     API Boundary Functions (replace with backend endpoints later)
+     API Boundary — backend at /api/, items.json fallback for local preview
      ------------------------------------------------------------------------ */
+  var API_BASE = "api/";
+  var BATCH = 5;
+  var fromParam = "";
+  (function () {
+    var match = /[?&]from=([^&#]*)/.exec(window.location.search || "");
+    if (match) {
+      try {
+        fromParam = decodeURIComponent(match[1].replace(/\+/g, " "));
+      } catch (e) {
+        fromParam = "";
+      }
+    }
+  })();
+  var fromSent = false;
+  var pending = store.get("verna.proto.pending", []);
+  if (!Array.isArray(pending)) {
+    pending = [];
+  }
+  var flushing = false;
+
+  function savePending() {
+    store.set("verna.proto.pending", pending);
+  }
+
+  function endpointFor(op) {
+    if (op.kind === "vote") {
+      return "vote";
+    }
+    if (op.kind === "unvote") {
+      return "unvote";
+    }
+    if (op.kind === "skip") {
+      return "skip";
+    }
+    return op.kind;
+  }
+
+  function apiJson(method, path, payload) {
+    var opts = {
+      method: method,
+      headers: { Accept: "application/json" },
+      cache: "no-store"
+    };
+    if (payload !== undefined) {
+      opts.headers["Content-Type"] = "application/json";
+      opts.body = JSON.stringify(payload);
+    }
+    return fetch(API_BASE + path, opts).then(function (res) {
+      return res.text().then(function (text) {
+        var json = null;
+        try {
+          json = text ? JSON.parse(text) : null;
+        } catch (e) {
+          json = null;
+        }
+        if (!res.ok || !json || json.ok !== true) {
+          var err = new Error((json && json.error) || "HTTP " + res.status);
+          err.status = res.status;
+          err.code = json && json.error;
+          throw err;
+        }
+        return json;
+      });
+    });
+  }
+
   function fetchItems() {
+    var url = "next?judge=" + encodeURIComponent(judge) + "&n=" + BATCH;
+    if (fromParam && !fromSent) {
+      url += "&from=" + encodeURIComponent(fromParam);
+    }
+    return apiJson("GET", url).then(function (data) {
+      if (!Array.isArray(data.items)) {
+        throw new Error("Invalid items format");
+      }
+      fromSent = true;
+      flushPending();
+      return data.items;
+    });
+  }
+
+  function fetchLocalItems() {
     return fetch("items.json").then(function (res) {
       if (!res.ok) {
         throw new Error("HTTP " + res.status);
       }
       return res.json();
     });
+  }
+
+  function loadBatch() {
+    return fetchItems().catch(function () {
+      return fetchLocalItems();
+    });
+  }
+
+  function enqueuePending(op) {
+    if (!op || !op.kind) {
+      return;
+    }
+    for (var i = pending.length - 1; i >= 0; i--) {
+      var queued = pending[i];
+      if (!queued) {
+        continue;
+      }
+      if (queued.item !== op.item || queued.judge !== op.judge) {
+        continue;
+      }
+      if (op.kind === "unvote") {
+        if (queued.kind === "vote" || queued.kind === "unvote") {
+          pending.splice(i, 1);
+        }
+      } else if (queued.kind === op.kind) {
+        pending.splice(i, 1);
+      }
+    }
+    pending.push(op);
+    savePending();
+  }
+
+  function flushPending() {
+    if (flushing || !pending.length) {
+      return;
+    }
+    flushing = true;
+    function step() {
+      if (!pending.length) {
+        flushing = false;
+        return;
+      }
+      var op = pending[0];
+      apiJson("POST", endpointFor(op), op).then(
+        function () {
+          var idx = pending.indexOf(op);
+          if (idx >= 0) {
+            pending.splice(idx, 1);
+          }
+          savePending();
+          step();
+        },
+        function (err) {
+          if (err && err.status && err.status < 500 && err.status !== 429) {
+            var idx = pending.indexOf(op);
+            if (idx >= 0) {
+              pending.splice(idx, 1);
+            }
+            savePending();
+            step();
+            return;
+          }
+          flushing = false;
+        }
+      );
+    }
+    step();
+  }
+
+  function dropPendingFor(op) {
+    if (!op || !op.item || !op.judge) {
+      return;
+    }
+    for (var i = pending.length - 1; i >= 0; i--) {
+      var queued = pending[i];
+      if (!queued || queued.item !== op.item || queued.judge !== op.judge) {
+        continue;
+      }
+      if (op.kind === "vote" || op.kind === "unvote") {
+        if (queued.kind === "vote" || queued.kind === "unvote") {
+          pending.splice(i, 1);
+        }
+      } else if (op.kind === "skip" && queued.kind === "skip") {
+        pending.splice(i, 1);
+      }
+    }
+    savePending();
+  }
+
+  function sendOrQueue(op) {
+    apiJson("POST", endpointFor(op), op).then(
+      function () {
+        // The server now has the newest state; anything still queued for
+        // this item would only overwrite it with stale data.
+        dropPendingFor(op);
+        flushPending();
+      },
+      function (err) {
+        if (!err || !err.status || err.status >= 500 || err.status === 429) {
+          enqueuePending(op);
+        }
+      }
+    );
   }
 
   function submitVote(record) {
@@ -66,12 +272,38 @@
       votes.push(record);
     }
     store.set("verna.proto.votes", votes);
+    syncVotedMap();
+
+    sendOrQueue({
+      kind: "vote",
+      item: record.item,
+      judge: record.judge,
+      choice: record.choice,
+      left: record.left,
+      ms: record.ms,
+      reasons: record.reasons || [],
+      note: record.note || ""
+    });
     return Promise.resolve(record);
   }
 
-  function removeLastVote() {
-    votes.pop();
+  function removeVoteByItem(itemId) {
+    for (var i = votes.length - 1; i >= 0; i--) {
+      if (votes[i] && votes[i].item === itemId) {
+        votes.splice(i, 1);
+        break;
+      }
+    }
     store.set("verna.proto.votes", votes);
+    syncVotedMap();
+  }
+
+  function sendUnvote(itemId) {
+    sendOrQueue({ kind: "unvote", item: itemId, judge: judge });
+  }
+
+  function sendSkip(itemId) {
+    sendOrQueue({ kind: "skip", item: itemId, judge: judge });
   }
 
   /* ------------------------------------------------------------------------
@@ -86,17 +318,18 @@
     "语气或文体变了",
     "用词别扭"
   ];
-  var EVEN = ["两份都不错", "两份都没改到点子上", "两份都改坏了", "原文本来就还行"];
 
-  var items = [];
   var queue = [];
   var itemsLoaded = false;
   var itemsLoading = false;
+  var loadPromise = null;
+  var exhausted = false;
   var cur = null;
   var shownAt = 0;
   var last = null;
   var activeView = "home";
   var toastTimer = null;
+  var submitBusy = false;
 
   var reduceMotionQuery = window.matchMedia
     ? window.matchMedia("(prefers-reduced-motion: reduce)")
@@ -262,7 +495,6 @@
   function setDockDone(isDone) {
     var dock = $("#vote-dock");
     var review = $("#view-review");
-    var skipBtn = $("#btn-skip");
     if (isDone) {
       dock.classList.add("is-done");
       review.classList.add("has-dock-done");
@@ -270,9 +502,16 @@
       dock.classList.remove("is-done");
       review.classList.remove("has-dock-done");
     }
-    if (skipBtn) {
-      skipBtn.hidden = isDone || queue.length <= 1;
+    updateSkipVisibility();
+  }
+
+  function updateSkipVisibility() {
+    var skipBtn = $("#btn-skip");
+    if (!skipBtn) {
+      return;
     }
+    var done = $("#vote-dock").classList.contains("is-done");
+    skipBtn.hidden = done || (queue.length <= 1 && exhausted);
   }
 
   function fillCandidate(sel, text) {
@@ -282,14 +521,108 @@
     card.querySelector(".cand-prose").innerHTML = renderText(text, marks);
   }
 
-  function showCurrentItem() {
-    var doneMap = {};
-    for (var i = 0; i < votes.length; i++) {
-      if (votes[i] && votes[i].item) {
-        doneMap[votes[i].item] = true;
-      }
+  /* Fetch the next batch and append anything this judge has not seen yet. */
+  function refill() {
+    if (loadPromise) {
+      return loadPromise;
     }
-    while (queue.length && doneMap[queue[0].id]) {
+    if (exhausted) {
+      return Promise.resolve(false);
+    }
+    loadPromise = loadBatch().then(
+      function (list) {
+        loadPromise = null;
+        var have = {};
+        var i;
+        for (i = 0; i < queue.length; i++) {
+          if (queue[i] && queue[i].id) {
+            have[queue[i].id] = true;
+          }
+        }
+        for (i = 0; i < votes.length; i++) {
+          if (votes[i] && votes[i].item) {
+            have[votes[i].item] = true;
+          }
+        }
+        for (i = 0; i < skips.length; i++) {
+          if (typeof skips[i] === "string") {
+            have[skips[i]] = true;
+          }
+        }
+
+        var fresh = [];
+        var rows = Array.isArray(list) ? list : [];
+        for (i = 0; i < rows.length; i++) {
+          var row = rows[i];
+          if (!row || typeof row.id !== "string" || have[row.id]) {
+            continue;
+          }
+          if (votedMap[row.id] || skippedMap[row.id]) {
+            continue;
+          }
+          have[row.id] = true;
+          fresh.push({
+            id: row.id,
+            genre: row.genre || "",
+            source: row.source || "",
+            a: row.a || "",
+            b: row.b || ""
+          });
+        }
+        if (!fresh.length) {
+          exhausted = true;
+        } else {
+          queue = queue.concat(fresh);
+        }
+        return fresh.length > 0;
+      },
+      function (err) {
+        loadPromise = null;
+        throw err;
+      }
+    );
+    return loadPromise;
+  }
+
+  function showLoadError() {
+    cur = null;
+    $("#review-item").hidden = true;
+    $("#review-end").hidden = true;
+    $("#vote-dock").hidden = true;
+    $("#review-error").hidden = false;
+  }
+
+  function ensureMore() {
+    if (loadPromise || exhausted) {
+      return;
+    }
+    refill().then(
+      function () {
+        updateSkipVisibility();
+        if (!cur) {
+          showCurrentItem();
+        }
+      },
+      function () {
+        if (!cur) {
+          showLoadError();
+        }
+      }
+    );
+  }
+
+  function advance() {
+    showCurrentItem();
+    if (queue.length < 2 && !exhausted) {
+      ensureMore();
+    }
+  }
+
+  function showCurrentItem() {
+    if (activeView !== "review") {
+      return;
+    }
+    while (queue.length && (votedMap[queue[0].id] || skippedMap[queue[0].id])) {
       queue.shift();
     }
 
@@ -298,10 +631,15 @@
     if (!queue.length) {
       cur = null;
       $("#review-item").hidden = true;
-      $("#review-end").hidden = false;
       $("#vote-dock").hidden = true;
       setDockDone(false);
-      $("#end-summary").textContent = "感谢你的评审。你一共评了 " + votes.length + " 题。";
+      if (exhausted) {
+        $("#review-end").hidden = false;
+        $("#end-summary").textContent = "感谢你的评审。你一共评了 " + votes.length + " 题。";
+      } else {
+        $("#review-end").hidden = true;
+        ensureMore();
+      }
       return;
     }
 
@@ -312,7 +650,7 @@
 
     $("#review-end").hidden = true;
     $("#review-item").hidden = false;
-    $("#vote-dock").hidden = activeView !== "review";
+    $("#vote-dock").hidden = false;
 
     $("#item-genre").textContent = cur.genre || "";
     $("#src-len").textContent = hanLen(cur.source) + " 字";
@@ -341,6 +679,7 @@
         $("#review-end").hidden = true;
         $("#review-error").hidden = true;
         $("#vote-dock").hidden = false;
+        updateSkipVisibility();
       } else {
         showCurrentItem();
       }
@@ -350,24 +689,17 @@
       return;
     }
     itemsLoading = true;
-    fetchItems()
-      .then(function (data) {
+    refill().then(
+      function () {
         itemsLoading = false;
-        if (!Array.isArray(data)) {
-          throw new Error("Invalid items format");
-        }
         itemsLoaded = true;
-        items = data;
-        queue = shuffle(items.slice());
         showCurrentItem();
-      })
-      .catch(function () {
+      },
+      function () {
         itemsLoading = false;
-        $("#review-item").hidden = true;
-        $("#review-end").hidden = true;
-        $("#vote-dock").hidden = true;
-        $("#review-error").hidden = false;
-      });
+        showLoadError();
+      }
+    );
   }
 
   function getRecordedText(v) {
@@ -377,10 +709,7 @@
     if (v === "R") {
       return "已记录：你选了 B。";
     }
-    if (v === "tie") {
-      return "已记录：两份差不多。";
-    }
-    return "已记录：两份都不行。";
+    return "已记录：原文更好。";
   }
 
   function handleVote(v) {
@@ -403,7 +732,7 @@
       judge: judge,
       choice: pick,
       left: cur.flip ? "b" : "a",
-      ms: Date.now() - shownAt,
+      ms: Math.min(Math.max(0, Date.now() - shownAt), 86400000),
       reasons: [],
       note: "",
       at: new Date().toISOString()
@@ -417,7 +746,8 @@
     if (prefs.quiet) {
       showToast(recordedText);
       queue.shift();
-      showCurrentItem();
+      last = null;
+      advance();
       return;
     }
 
@@ -436,10 +766,7 @@
           [side + " 好在哪", GOOD, "good:"],
           [other + " 的问题", BAD, "bad:"]
         ]
-      : [
-          ["怎么说", EVEN, "even:"],
-          ["两份共同的问题", BAD, "bad:"]
-        ];
+      : [["两份改写的问题", BAD, "bad:"]];
 
     $("#reason-groups").innerHTML = groups
       .map(function (group) {
@@ -472,23 +799,29 @@
   }
 
   function handleNext() {
-    if (last && $("#vote-dock").classList.contains("is-done")) {
-      var pressed = document.querySelectorAll('.reason-chip[aria-pressed="true"]');
-      last.reasons = Array.prototype.map.call(pressed, function (btn) {
-        return btn.getAttribute("data-r");
-      });
-      last.note = $("#note-input").value.trim();
-      submitVote(last);
+    if (!last || !$("#vote-dock").classList.contains("is-done")) {
+      return;
     }
-    queue.shift();
-    showCurrentItem();
+    var pressed = document.querySelectorAll('.reason-chip[aria-pressed="true"]');
+    last.reasons = Array.prototype.map.call(pressed, function (btn) {
+      return btn.getAttribute("data-r");
+    });
+    last.note = $("#note-input").value.trim();
+    submitVote(last);
+    if (queue.length) {
+      queue.shift();
+    }
+    last = null;
+    advance();
   }
 
   function handleUndo() {
     if (!last) {
       return;
     }
-    removeLastVote();
+    var itemId = last.item;
+    removeVoteByItem(itemId);
+    sendUnvote(itemId);
     updateCount();
     last = null;
     setDockDone(false);
@@ -497,10 +830,21 @@
   }
 
   function handleSkip() {
-    if (queue.length > 1) {
-      queue.push(queue.shift());
-      showCurrentItem();
+    if (!cur) {
+      return;
     }
+    var itemId = cur.id;
+    if (!skippedMap[itemId]) {
+      skippedMap[itemId] = true;
+      skips.push(itemId);
+      store.set("verna.proto.skips", skips);
+    }
+    sendSkip(itemId);
+    if (queue.length && queue[0].id === itemId) {
+      queue.shift();
+    }
+    last = null;
+    advance();
   }
 
   /* ------------------------------------------------------------------------
@@ -511,6 +855,9 @@
     if (h === "#/review" || h.indexOf("#/review/") === 0 || h.indexOf("#/review?") === 0) {
       return "review";
     }
+    if (h === "#/submit" || h.indexOf("#/submit/") === 0 || h.indexOf("#/submit?") === 0) {
+      return "submit";
+    }
     return "home";
   }
 
@@ -519,9 +866,12 @@
     activeView = nextView;
 
     var isReview = nextView === "review";
-    $("#view-home").hidden = isReview;
+    var isSubmit = nextView === "submit";
+    $("#view-home").hidden = nextView !== "home";
     $("#view-review").hidden = !isReview;
+    $("#view-submit").hidden = !isSubmit;
     $("#header-cta").hidden = isReview;
+    $("#header-nav-submit").hidden = isSubmit;
     $("#review-count").hidden = !isReview;
 
     if (isReview) {
@@ -529,6 +879,16 @@
       heroCanvas.stop();
       specimens.pause();
       ensureItemsLoaded();
+    } else if (isSubmit) {
+      $("#vote-dock").hidden = true;
+      heroCanvas.stop();
+      specimens.pause();
+      if (!$("#submit-done").hidden) {
+        resetSubmitForm();
+      } else {
+        updateSubmitCount();
+      }
+      window.scrollTo(0, 0);
     } else {
       $("#vote-dock").hidden = true;
       heroCanvas.sync();
@@ -939,6 +1299,91 @@
   }
 
   /* ------------------------------------------------------------------------
+     Submission Page
+     ------------------------------------------------------------------------ */
+  function updateSubmitCount() {
+    var area = $("#sub-text");
+    if (!area) {
+      return;
+    }
+    var value = area.value || "";
+    $("#sub-count").textContent = "已输入 " + hanLen(value) + " 字";
+    $("#sub-limit-hint").hidden = value.length <= 3000;
+  }
+
+  function showSubmitError(message) {
+    $("#sub-error").textContent = message || "";
+  }
+
+  function resetSubmitForm() {
+    var form = $("#submit-form");
+    if (!form) {
+      return;
+    }
+    form.reset();
+    showSubmitError("");
+    $("#sub-go").disabled = true;
+    $("#submit-done").hidden = true;
+    $("#submit-form").hidden = false;
+    updateSubmitCount();
+  }
+
+  function handleSubmitForm(event) {
+    event.preventDefault();
+    if (submitBusy) {
+      return;
+    }
+    var text = $("#sub-text").value.trim();
+    if (text.length > 3000) {
+      showSubmitError("原文超过 3000 字");
+      return;
+    }
+    if (hanLen(text) < 50) {
+      showSubmitError("原文不足 50 字");
+      return;
+    }
+    if (!$("#sub-consent").checked) {
+      return;
+    }
+    submitBusy = true;
+    var button = $("#sub-go");
+    button.disabled = true;
+    showSubmitError("");
+    apiJson("POST", "submit", {
+      judge: judge,
+      text: text,
+      model: $("#sub-model").value,
+      scene: $("#sub-scene").value.trim(),
+      nickname: $("#sub-nickname").value.trim(),
+      consent: true
+    }).then(
+      function () {
+        submitBusy = false;
+        button.disabled = !$("#sub-consent").checked;
+        $("#submit-form").hidden = true;
+        $("#submit-done").hidden = false;
+        window.scrollTo(0, 0);
+      },
+      function (err) {
+        submitBusy = false;
+        button.disabled = !$("#sub-consent").checked;
+        var code = err && err.code;
+        var message = "提交失败，请稍后重试";
+        if (code === "too_short") {
+          message = "原文不足 50 字";
+        } else if (code === "too_long") {
+          message = "原文超过 3000 字";
+        } else if (code === "duplicate") {
+          message = "这段文字已经有人投过了";
+        } else if (code === "limit") {
+          message = "今天的投稿次数已达上限";
+        }
+        showSubmitError(message);
+      }
+    );
+  }
+
+  /* ------------------------------------------------------------------------
      Event Bindings
      ------------------------------------------------------------------------ */
   $("#btn-learn").addEventListener("click", function () {
@@ -980,6 +1425,18 @@
   $("#btn-undo").addEventListener("click", handleUndo);
   $("#btn-copy").addEventListener("click", copyShareLink);
 
+  $("#submit-form").addEventListener("submit", handleSubmitForm);
+  $("#sub-text").addEventListener("input", function () {
+    updateSubmitCount();
+    if ($("#sub-error").textContent) {
+      showSubmitError("");
+    }
+  });
+  $("#sub-consent").addEventListener("change", function () {
+    $("#sub-go").disabled = submitBusy || !this.checked;
+  });
+  $("#sub-again").addEventListener("click", resetSubmitForm);
+
   document.addEventListener("click", function (e) {
     var btn = e.target && e.target.closest ? e.target.closest("[data-v],.reason-chip") : null;
     if (!btn) {
@@ -1016,10 +1473,7 @@
       handleVote("R");
     } else if (!done && e.key === "ArrowDown") {
       e.preventDefault();
-      handleVote("tie");
-    } else if (!done && (e.key === "x" || e.key === "X")) {
-      e.preventDefault();
-      handleVote("bad");
+      handleVote("src");
     } else if (done && e.key === "Enter") {
       e.preventDefault();
       handleNext();
@@ -1048,5 +1502,6 @@
      ------------------------------------------------------------------------ */
   initReveals();
   updateCount();
+  updateSubmitCount();
   applyRoute();
 })();
