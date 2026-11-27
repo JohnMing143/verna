@@ -1,0 +1,297 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f9f8f5" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0b0b0d" media="(prefers-color-scheme: dark)">
+<title>Verna · 把 AI 腔译成好中文</title>
+<meta name="description" content="大模型写下的中文越来越多，读起来顺畅的却很少。Verna 是一个开源的改写模型，它要学的标准来自真人的判断。">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="site-header" id="site-header">
+  <div class="header-inner">
+    <a class="brand" href="#/" id="brand-link">
+      <svg class="brand-mark" width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <rect x="1.5" y="1.5" width="21" height="21" rx="5" stroke="currentColor" stroke-width="1.5"/>
+        <path d="M7.5 7.5L12 16.5L16.5 7.5" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M12 16.5V18.5" stroke="var(--accent)" stroke-width="1.65" stroke-linecap="round"/>
+      </svg>
+      <span class="brand-name">Verna</span>
+    </a>
+    <div class="header-right">
+      <a class="header-cta" id="header-cta" href="#/review">开始评审</a>
+      <span class="review-count" id="review-count" hidden></span>
+    </div>
+  </div>
+</header>
+
+<div id="view-home" class="view-home">
+  <section class="hero" id="hero">
+    <canvas class="hero-canvas" id="hero-canvas" aria-hidden="true"></canvas>
+    <div class="hero-glow" aria-hidden="true"></div>
+    <div class="container hero-inner">
+      <div class="hero-rule" aria-hidden="true"></div>
+      <h1 class="hero-title">把 AI 腔译成好中文</h1>
+      <p class="hero-lead">大模型写下的中文越来越多，读起来顺畅的却很少。Verna 是一个开源的改写模型，它要学的标准来自真人的判断。</p>
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="#/review">
+          <span>开始评审</span>
+          <svg class="btn-arrow" width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <path d="M3.5 8H12.5M12.5 8L8.5 4M12.5 8L8.5 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </a>
+        <button type="button" class="btn btn-ghost" id="btn-learn">了解项目</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="landing-section" id="problem">
+    <div class="container">
+      <div class="sec-grid reveal">
+        <div class="sec-rail">
+          <h2 class="sec-title">问题</h2>
+        </div>
+        <div class="sec-content">
+          <p class="sec-lead">大模型在训练中被自动打分程序反复评分，写出来的中文也随之带上了打分程序的偏好。最常见的是两种。</p>
+          <div class="problem-list">
+            <article class="problem-card reveal">
+              <div class="problem-head">
+                <span class="mono-index" aria-hidden="true">01</span>
+                <h3 class="problem-heading">多余的对比</h3>
+              </div>
+              <p class="problem-body">人说“不是 A，而是 B”，是因为听的人可能真的以为 A。模型却在没人这样想的地方照样这么写，前半句没有提供任何信息。</p>
+              <div class="specimen specimen-redact" id="specimen-redact" tabindex="0" role="button">
+                <span class="corner c-tl" aria-hidden="true"></span>
+                <span class="corner c-tr" aria-hidden="true"></span>
+                <span class="corner c-bl" aria-hidden="true"></span>
+                <span class="corner c-br" aria-hidden="true"></span>
+                <p class="specimen-line">这<del class="redact-span">不仅是一组亮眼的数字，更</del>是用户对我们的信赖。</p>
+              </div>
+              <div class="problem-foot">
+                <div class="stat-block">
+                  <div class="stat-value">2.5–9.2 倍</div>
+                  <p class="stat-desc">五个商用模型使用这一句式的密度与人类写作之比</p>
+                </div>
+                <a class="cite-link" href="https://arxiv.org/abs/2610.22249" target="_blank" rel="noopener noreferrer">
+                  <span>arXiv 2610.22249</span>
+                  <span class="cite-arrow" aria-hidden="true">↗</span>
+                </a>
+              </div>
+            </article>
+
+            <article class="problem-card reveal">
+              <div class="problem-head">
+                <span class="mono-index" aria-hidden="true">02</span>
+                <h3 class="problem-heading">过度的压缩</h3>
+              </div>
+              <p class="problem-body">为了缩短输出，模型把“已经核查”写成“已核”，把“奖励”写成“奖”。现代汉语的双音词替读者保留了必要的冗余，省掉它们，理解的负担就转给了读者。</p>
+              <div class="specimen specimen-expand" id="specimen-expand" tabindex="0" role="button">
+                <span class="corner c-tl" aria-hidden="true"></span>
+                <span class="corner c-tr" aria-hidden="true"></span>
+                <span class="corner c-bl" aria-hidden="true"></span>
+                <span class="corner c-br" aria-hidden="true"></span>
+                <div class="expand-before" aria-hidden="true">已核，待定。</div>
+                <p class="specimen-line expand-line"><span class="exp-keep">已</span><span class="exp-add">经</span><span class="exp-keep">核</span><span class="exp-add">实</span><span class="exp-keep">，</span><span class="exp-drop">待</span><span class="exp-add">还没有</span><span class="exp-keep">定</span><span class="exp-add">下来</span><span class="exp-keep">。</span></p>
+              </div>
+              <div class="problem-foot">
+                <div class="stat-block">
+                  <p class="stat-desc">实验显示，训练中的长度惩罚会让模型一律选择更短的句式</p>
+                </div>
+                <a class="cite-link" href="https://arxiv.org/abs/2610.29162" target="_blank" rel="noopener noreferrer">
+                  <span>arXiv 2610.29162</span>
+                  <span class="cite-arrow" aria-hidden="true">↗</span>
+                </a>
+              </div>
+            </article>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="landing-section" id="vision">
+    <div class="container">
+      <div class="sec-grid reveal">
+        <div class="sec-rail">
+          <h2 class="sec-title">愿景</h2>
+        </div>
+        <div class="sec-content vision-copy">
+          <p>一个开源、能在个人电脑上运行的改写模型：给它一段 AI 腔的中文，它还你一段准确、自然、得体的文字。信息一条不丢，一条不添，文体和语气保持原样。</p>
+          <p>什么是好中文，不由某一个人说了算。评判标准来自许多评委的选择，规则随评审结果持续修订，模型也随之一轮一轮地改进。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="landing-section" id="participate">
+    <div class="container">
+      <div class="sec-grid reveal">
+        <div class="sec-rail">
+          <h2 class="sec-title">你可以做什么</h2>
+        </div>
+        <div class="sec-content">
+          <p class="sec-lead">每道题包含一段 AI 写的原文和两份改写。读完后，选出你更愿意读的那一份。</p>
+          <ol class="steps-grid">
+            <li class="step-item">
+              <span class="mono-index" aria-hidden="true">01</span>
+              <span class="step-text">读原文</span>
+            </li>
+            <li class="step-item">
+              <span class="mono-index" aria-hidden="true">02</span>
+              <span class="step-text">比较两份改写</span>
+            </li>
+            <li class="step-item">
+              <span class="mono-index" aria-hidden="true">03</span>
+              <span class="step-text">选择，理由可写可不写</span>
+            </li>
+          </ol>
+          <p class="sec-note">每道题由多位评委分别作答，结果不取决于任何一个人。无需注册。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="landing-section" id="opensource">
+    <div class="container">
+      <div class="sec-grid reveal">
+        <div class="sec-rail">
+          <h2 class="sec-title">开源</h2>
+        </div>
+        <div class="sec-content">
+          <p class="sec-body">Verna 的代码将在 GitHub 开源。评审数据目前仅与参与开发的贡献者共享。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="closing-section" id="closing">
+    <div class="container closing-inner reveal">
+      <a class="btn btn-primary btn-lg" href="#/review">
+        <span>开始评审</span>
+        <svg class="btn-arrow" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <path d="M3.5 8H12.5M12.5 8L8.5 4M12.5 8L8.5 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </a>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <span class="footer-brand">Verna</span>
+    </div>
+  </footer>
+</div>
+
+<main id="view-review" class="view-review" hidden>
+  <div class="review-wrap">
+    <article id="review-item" class="review-item" hidden>
+      <div class="review-meta">
+        <span class="genre-tag" id="item-genre"></span>
+        <button type="button" class="text-link" id="btn-skip">跳过这题</button>
+      </div>
+
+      <section class="source-card" id="src-card">
+        <div class="source-head">
+          <div class="source-head-left">
+            <span class="source-label">原文</span>
+            <span class="char-count" id="src-len"></span>
+          </div>
+          <button type="button" class="fold-btn" id="btn-fold" aria-expanded="true">
+            <span id="fold-label">收起</span>
+            <svg class="fold-icon" width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <path d="M4 10L8 6L12 10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+        </div>
+        <div class="prose source-prose" id="src-text"></div>
+      </section>
+
+      <div class="prompt-bar">
+        <div class="prompt-copy">
+          <p class="prompt-q">你更愿意读哪一份？</p>
+          <p class="prompt-sub">两份改写都应与原文信息一致、文体和语气不变。</p>
+        </div>
+        <label class="diff-toggle">
+          <input type="checkbox" id="opt-diff">
+          <span class="toggle-track" aria-hidden="true"></span>
+          <span>标出改写里新加的字</span>
+        </label>
+      </div>
+
+      <div class="pair-grid">
+        <section class="cand-card" id="cand-a" aria-label="A">
+          <div class="cand-head">
+            <span class="cand-badge">A</span>
+            <svg class="cand-check" width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <path d="M3.5 8.5L6.5 11.5L12.5 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span class="char-count"></span>
+          </div>
+          <div class="prose cand-prose"></div>
+        </section>
+
+        <section class="cand-card" id="cand-b" aria-label="B">
+          <div class="cand-head">
+            <span class="cand-badge">B</span>
+            <svg class="cand-check" width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <path d="M3.5 8.5L6.5 11.5L12.5 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span class="char-count"></span>
+          </div>
+          <div class="prose cand-prose"></div>
+        </section>
+      </div>
+    </article>
+
+    <section id="review-end" class="state-card" hidden>
+      <div class="state-icon" aria-hidden="true">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+          <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.4"/>
+          <path d="M8 12.4L10.8 15.2L16.2 9.4" stroke="var(--accent)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <h2>这一批题已经完成</h2>
+      <p id="end-summary"></p>
+      <button type="button" class="btn btn-primary" id="btn-copy">复制链接</button>
+    </section>
+
+    <section id="review-error" class="state-card" hidden>
+      <p>题目没有加载出来，请刷新重试。</p>
+    </section>
+  </div>
+</main>
+
+<div class="vote-dock" id="vote-dock" hidden>
+  <div class="dock-inner">
+    <div class="vote-choices" id="vote-choices">
+      <button type="button" class="vote-btn vote-primary" data-v="L"><kbd>←</kbd><span>A 更好</span></button>
+      <button type="button" class="vote-btn vote-secondary" data-v="tie"><span>差不多</span><kbd>↓</kbd></button>
+      <button type="button" class="vote-btn vote-secondary" data-v="bad"><span>都不行</span><kbd>X</kbd></button>
+      <button type="button" class="vote-btn vote-primary" data-v="R"><span>B 更好</span><kbd>→</kbd></button>
+    </div>
+
+    <div class="vote-after" id="vote-after">
+      <div class="after-head">
+        <span class="after-said" id="after-said"></span>
+        <button type="button" class="text-link" id="btn-undo">改选</button>
+      </div>
+      <div class="reason-groups" id="reason-groups"></div>
+      <div class="after-foot">
+        <input type="text" class="note-input" id="note-input" maxlength="300" placeholder="想多说一句？（可不填）">
+        <button type="button" class="btn btn-primary btn-next" id="btn-next"><span>下一题</span><kbd>Enter</kbd></button>
+      </div>
+      <label class="quiet-check">
+        <input type="checkbox" id="opt-quiet">
+        <span>以后不问理由，投完直接下一题</span>
+      </label>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="app.js"></script>
+</body>
+</html>

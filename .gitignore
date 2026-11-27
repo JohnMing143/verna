@@ -1,0 +1,35 @@
+# 数据和产物：一律不进仓库（只和参与开发的人另行共享）
+/data/
+/runs/
+/vote/data/
+/corpus/samples/
+/corpus/work/
+/corpus/state/
+/corpus/manifest.json
+/corpus/collect.log
+*.jsonl
+*.gguf
+*.safetensors
+*.zip
+*.tar.gz
+*.enc
+
+# 本机配置、密钥和运维记录
+/autopilot/env
+/autopilot/config.json
+/autopilot/wake_prompt.md
+/autopilot/*.bak*
+/HANDOFF.md
+/scratchpad/
+/vote/deployed-proto/
+/vote/*-brief.md
+.agy-staff/
+
+# 环境
+/.venv/
+__pycache__/
+*.pyc
+*.log
+.DS_Store
+/vote/proto/
+/autopilot/floway_probe.py

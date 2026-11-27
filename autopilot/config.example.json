@@ -1,0 +1,524 @@
+{
+ "sources": [
+  {
+   "name": "zhihu",
+   "type": "hf_zhihu",
+   "before": "2022-11-30",
+   "min_upvotes": 300,
+   "max_docs": 8000
+  },
+  {
+   "name": "csl",
+   "type": "hf",
+   "dataset": "neuclir/csl",
+   "split": "csl",
+   "text_field": "abstract",
+   "title_field": "title",
+   "normalize_punct": true,
+   "genre_hint": "academic",
+   "every": 50,
+   "max_docs": 4000,
+   "keep_fields": [
+    "discipline"
+   ]
+  },
+  {
+   "name": "people_daily",
+   "type": "hf",
+   "dataset": "Papersnake/people_daily_news",
+   "date_field": "date",
+   "date_min": "1995-01-01",
+   "date_max": "2022-11-30",
+   "genre_hint": "news",
+   "every": 20,
+   "max_docs": 3000
+  },
+  {
+   "name": "people_daily_span",
+   "type": "hf",
+   "dataset": "Papersnake/people_daily_news",
+   "data_files": [
+    "1998.jsonl.gz",
+    "2001.jsonl.gz",
+    "2004.jsonl.gz",
+    "2007.jsonl.gz",
+    "2010.jsonl.gz",
+    "2013.jsonl.gz",
+    "2016.jsonl.gz",
+    "2019.jsonl.gz",
+    "2022.jsonl.gz"
+   ],
+   "per_file": 220,
+   "every": 100,
+   "date_field": "date",
+   "date_min": "1995-01-01",
+   "date_max": "2022-11-30",
+   "genre_hint": "news",
+   "max_docs": 2000
+  },
+  {
+   "name": "thucnews",
+   "type": "hf",
+   "dataset": "SirlyDreamer/THUCNews",
+   "genre_hint": "news",
+   "every": 30,
+   "max_docs": 2500
+  },
+  {
+   "name": "thucnews_mix",
+   "type": "hf",
+   "dataset": "SirlyDreamer/THUCNews",
+   "genre_hint": "news",
+   "every": 100,
+   "where_not": {
+    "label": [
+     "体育",
+     "彩票",
+     "星座"
+    ]
+   },
+   "cap_by": {
+    "field": "label",
+    "max": 250
+   },
+   "keep_fields": [
+    "label"
+   ],
+   "max_docs": 2500
+  },
+  {
+   "name": "thucnews_cat",
+   "type": "hf",
+   "dataset": "SirlyDreamer/THUCNews",
+   "genre_hint": "news",
+   "every": 97,
+   "where_not": {
+    "label": [
+     "体育",
+     "彩票",
+     "星座"
+    ]
+   },
+   "cap_by": {
+    "field": "label",
+    "max": 250
+   },
+   "keep_fields": [
+    "label"
+   ],
+   "max_docs": 2500
+  },
+  {
+   "name": "wikisource",
+   "type": "wikisource",
+   "authors": [
+    "朱自清",
+    "鲁迅",
+    "郁达夫",
+    "萧红",
+    "老舍",
+    "胡适",
+    "许地山",
+    "徐志摩",
+    "闻一多",
+    "夏丏尊"
+   ],
+   "max_per_author": 250,
+   "genre_hint": "essay",
+   "max_docs": 2000
+  },
+  {
+   "name": "ruanyf_weekly",
+   "type": "git_md",
+   "repo": "https://github.com/ruanyf/weekly",
+   "glob": "docs/issue-*.md",
+   "author": "阮一峰",
+   "max_docs": 400
+  },
+  {
+   "name": "ruanyf_topic",
+   "type": "git_md",
+   "repo": "https://github.com/ruanyf/weekly",
+   "checkout": "ruanyf_weekly",
+   "glob": "docs/issue-*.md",
+   "section": "^## (?:本周话题|刊首语)",
+   "author": "阮一峰",
+   "max_docs": 400
+  },
+  {
+   "name": "cqia_douban",
+   "type": "hf",
+   "dataset": "m-a-p/COIG-CQIA",
+   "config": "douban",
+   "text_field": "output",
+   "title_field": "instruction",
+   "where": {
+    "answer_from": "human"
+   },
+   "max_docs": 1500
+  },
+  {
+   "name": "cqia_segmentfault",
+   "type": "hf",
+   "dataset": "m-a-p/COIG-CQIA",
+   "config": "segmentfault",
+   "text_field": "output",
+   "title_field": "instruction",
+   "where": {
+    "answer_from": "human"
+   },
+   "genre_hint": "tech",
+   "max_docs": 458
+  },
+  {
+   "name": "hello_algo",
+   "type": "git_md",
+   "repo": "https://github.com/krahets/hello-algo",
+   "sparse": [
+    "/docs/chapter_*/*.md"
+   ],
+   "glob": "docs/chapter_*/*.md",
+   "author": "krahets",
+   "genre_hint": "tech",
+   "max_docs": 200
+  },
+  {
+   "name": "wangdoc",
+   "type": "git_md",
+   "repos": [
+    "https://github.com/wangdoc/javascript-tutorial",
+    "https://github.com/wangdoc/bash-tutorial",
+    "https://github.com/wangdoc/ssh-tutorial",
+    "https://github.com/wangdoc/clang-tutorial",
+    "https://github.com/wangdoc/typescript-tutorial",
+    "https://github.com/wangdoc/webapi-tutorial"
+   ],
+   "glob": "docs/**/*.md",
+   "author": "阮一峰",
+   "genre_hint": "tech",
+   "max_docs": 400
+  },
+  {
+   "name": "wangdoc2",
+   "type": "git_md",
+   "repos": [
+    "https://github.com/wangdoc/javascript-tutorial",
+    "https://github.com/wangdoc/bash-tutorial",
+    "https://github.com/wangdoc/ssh-tutorial",
+    "https://github.com/wangdoc/clang-tutorial",
+    "https://github.com/wangdoc/typescript-tutorial",
+    "https://github.com/wangdoc/webapi-tutorial"
+   ],
+   "glob": "docs/**/*.md",
+   "author": "阮一峰",
+   "genre_hint": "tech",
+   "max_docs": 400,
+   "checkout": "wangdoc",
+   "enabled": false,
+   "needs_harvest_version": 2
+  },
+  {
+   "name": "wangdoc3",
+   "type": "git_md",
+   "repos": [
+    "https://github.com/wangdoc/javascript-tutorial",
+    "https://github.com/wangdoc/bash-tutorial",
+    "https://github.com/wangdoc/ssh-tutorial",
+    "https://github.com/wangdoc/clang-tutorial",
+    "https://github.com/wangdoc/typescript-tutorial",
+    "https://github.com/wangdoc/webapi-tutorial"
+   ],
+   "glob": "docs/**/*.md",
+   "author": "阮一峰",
+   "genre_hint": "tech",
+   "max_docs": 400,
+   "checkout": "wangdoc",
+   "enabled": false,
+   "needs_harvest_version": 3,
+   "md_runs": true
+  },
+  {
+   "name": "linux101",
+   "type": "git_md",
+   "repo": "https://github.com/ustclug/Linux101-docs",
+   "sparse": [
+    "/docs/**/*.md"
+   ],
+   "glob": "docs/**/*.md",
+   "author": "USTC LUG",
+   "genre_hint": "tech",
+   "max_docs": 100
+  },
+  {
+   "name": "people_daily_speech",
+   "type": "hf",
+   "dataset": "Papersnake/people_daily_news",
+   "data_files": [
+    "1996.jsonl.gz",
+    "1998.jsonl.gz",
+    "2000.jsonl.gz",
+    "2002.jsonl.gz",
+    "2004.jsonl.gz",
+    "2006.jsonl.gz",
+    "2008.jsonl.gz",
+    "2010.jsonl.gz",
+    "2012.jsonl.gz",
+    "2014.jsonl.gz",
+    "2016.jsonl.gz",
+    "2018.jsonl.gz",
+    "2020.jsonl.gz",
+    "2022.jsonl.gz"
+   ],
+   "per_file": 40,
+   "title_re": "^(在.{2,40}的(讲话|致辞|发言|演讲|演说)|.{0,12}(新年贺词|新年致辞))$",
+   "date_field": "date",
+   "date_min": "1995-01-01",
+   "date_max": "2022-11-30",
+   "genre_hint": "speech",
+   "max_docs": 560
+  },
+  {
+   "name": "people_daily_opinion",
+   "type": "hf",
+   "dataset": "Papersnake/people_daily_news",
+   "data_files": [
+    "1996.jsonl.gz",
+    "1998.jsonl.gz",
+    "2000.jsonl.gz",
+    "2002.jsonl.gz",
+    "2004.jsonl.gz",
+    "2006.jsonl.gz",
+    "2008.jsonl.gz",
+    "2010.jsonl.gz",
+    "2012.jsonl.gz",
+    "2014.jsonl.gz",
+    "2016.jsonl.gz",
+    "2018.jsonl.gz",
+    "2020.jsonl.gz",
+    "2022.jsonl.gz"
+   ],
+   "per_file": 50,
+   "every": 20,
+   "title_re": "（(人民论坛|人民时评|今日谈|评论员观察|钟声|大使随笔|大家手笔|新论|快评|短评|时事观察|国际论坛|民生观|记者手记|金台随笔|大地漫笔|五洲茶亭|人民观点|望海楼|今日论坛|新语|学苑论衡|思想纵横|求是谈|随笔|杂谈|漫笔|感言|札记|手记)）\\s*$",
+   "date_field": "date",
+   "date_min": "1995-01-01",
+   "date_max": "2022-11-30",
+   "genre_hint": "opinion",
+   "max_docs": 700
+  },
+  {
+   "name": "zhihu_fiction",
+   "type": "hf",
+   "dataset": "json",
+   "data_files": [
+    "/root/shuorenhua/data/v3/extra/zhihu_genre/v1/fiction.jsonl"
+   ],
+   "per_file": 1000,
+   "text_field": "text",
+   "title_field": "question",
+   "date_field": "created",
+   "date_max": "2022-11-30",
+   "genre_hint": "fiction",
+   "keep_fields": [
+    "id",
+    "url",
+    "upvotes",
+    "scout_conf"
+   ],
+   "max_docs": 433
+  },
+  {
+   "name": "zhihu_popsci",
+   "type": "hf",
+   "dataset": "json",
+   "data_files": [
+    "/root/shuorenhua/data/v3/extra/zhihu_genre/v1/popsci.jsonl"
+   ],
+   "per_file": 1000,
+   "text_field": "text",
+   "title_field": "question",
+   "date_field": "created",
+   "date_max": "2022-11-30",
+   "genre_hint": "popsci",
+   "keep_fields": [
+    "id",
+    "url",
+    "upvotes",
+    "scout_conf"
+   ],
+   "max_docs": 773
+  },
+  {
+   "name": "zhihu_essay",
+   "type": "hf",
+   "dataset": "json",
+   "data_files": [
+    "/root/shuorenhua/data/v3/extra/zhihu_genre/v1/essay.jsonl"
+   ],
+   "per_file": 1000,
+   "text_field": "text",
+   "title_field": "question",
+   "date_field": "created",
+   "date_max": "2022-11-30",
+   "genre_hint": "essay",
+   "keep_fields": [
+    "id",
+    "url",
+    "upvotes",
+    "scout_conf"
+   ],
+   "max_docs": 501
+  },
+  {
+   "name": "co_ann_report",
+   "type": "hf",
+   "dataset": "json",
+   "data_files": [
+    "/root/shuorenhua/data/v3/extra/co_ann_report/v1/mnbvc_co_ann_report.clean-000.jsonl.gz"
+   ],
+   "per_file": 800,
+   "every": 5,
+   "text_field": "text",
+   "title_field": "section",
+   "genre_hint": "business",
+   "keep_fields": [
+    "id",
+    "company",
+    "year",
+    "section"
+   ],
+   "max_docs": 700
+  }
+ ],
+ "quota": {
+  "floor_weekly": 5,
+  "floor_5h": 8
+ },
+ "segment": {
+  "per_doc": 3,
+  "retired": [
+   "wangdoc",
+   "wangdoc2"
+  ]
+ },
+ "grade": {
+  "model": "agy:gemini-4-argon-medium",
+  "batch": 6,
+  "workers": 4,
+  "per_cycle": 600,
+  "ai_max": 0.15,
+  "confirm_model": "agy:gemini-4-argon-high",
+  "confirm_per_cycle": 150,
+  "old_ok_genres": [
+   "essay",
+   "fiction"
+  ],
+  "review_after": 60,
+  "source_caps": {
+   "thucnews": 500,
+   "people_daily": 900,
+   "thucnews_mix": 324,
+   "thucnews_cat": 600,
+   "wangdoc": 65,
+   "wangdoc2": 67
+  }
+ },
+ "pairs": {
+  "teacher": "agy:gemini-4-argon-medium",
+  "judge": "agy:gemini-4-argon-medium",
+  "workers": 4,
+  "per_cycle": 120,
+  "keep_share": 0.15,
+  "human_ai_max": 0.3,
+  "targets": {
+   "reverse": 2000,
+   "keep": 700,
+   "distill_human": 2500,
+   "distill_ai": 1200
+  },
+  "writers": [
+   "agy:gemini-3.8-flash-low",
+   "deepseek-v4.1-flash@https://your-gateway.example.com/v1"
+  ],
+  "final_gate": "agy:gemini-4-argon-high",
+  "human_per_cycle": 120,
+  "reverse_recheck_per_cycle": 250,
+  "degrade_models": [
+   "agy:gemini-4-argon-medium"
+  ],
+  "reverse_genre_basis": 4000,
+  "reverse_second_genres": [
+   "business",
+   "fiction",
+   "marketing",
+   "popsci",
+   "essay",
+   "opinion"
+  ],
+  "reverse_ai": {
+   "enabled": true,
+   "target": 1000,
+   "per_cycle": 60,
+   "pilot": 30,
+   "pilot_ok": true
+  },
+  "ai2": {
+   "teacher": "agy:gemini-4-carbon-medium",
+   "teacher_timeout": 600,
+   "teacher_note": "11-12 主会话：Carbon 实测后 AI 线老师换 Carbon medium（low 不思考，改错事实和 Argon 差不多）；裁判/终审仍是 Argon",
+   "enabled": true,
+   "target": 1200,
+   "pilot": 30,
+   "pilot_ok": true,
+   "exclude_v1": true
+  }
+ },
+ "audit": {
+  "model": "agy:gemini-4-argon-high",
+  "every": 150,
+  "n": 20,
+  "fail_max": 0.2,
+  "workers": 4,
+  "recheck": [
+   {
+    "origin": "distill_ai",
+    "genres": [
+     "popsci"
+    ],
+    "per_cycle": 60
+   },
+   {
+    "origins": [
+     "distill_human",
+     "distill_ai"
+    ],
+    "min_gate_problems": 2,
+    "per_cycle": 120,
+    "hold": true
+   }
+  ]
+ },
+ "slop_thresholds": [
+  300,
+  1500,
+  4000
+ ],
+ "wake": {
+  "model": "deepseek-v4.1-flash",
+  "max_per_day": 6,
+  "timeout_min": 40,
+  "daily_every_h": 20,
+  "agent": "claude-ds",
+  "fallback_models": [
+   "deepseek-v4-1-flash-1017",
+   "glm-5.3"
+  ]
+ },
+ "report_every_min": 120,
+ "cycle_sleep_sec": 120,
+ "disk": {
+  "min_free_gb_harvest": 10,
+  "min_free_gb_run": 5,
+  "agy_log_keep_days": 3
+ }
+}
